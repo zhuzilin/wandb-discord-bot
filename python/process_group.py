@@ -13,6 +13,11 @@ import seaborn as sns
 plt.style.use('dark_background')
 
 
+UNLOGGED_IN_ERROR_MESSAGE = (
+    'You haven\'t logged in yet. Please use `/login key:WANDB_API_KEY` command to login first'
+)
+
+
 def colored_state(state):
     return state + (' 🟢' if state == 'running' else ' 🔴')
 
@@ -26,19 +31,19 @@ def wandb_loop(input_queue, output_queue):
         name, payload = inputs
         print(f'start command {name}')
         try:
-            if name == "login":
-                assert api is None, "login the second time in wandb_loop"
+            if name == '/login':
+                assert api is None, 'login the second time in wandb_loop'
                 try:
                     key = payload
                     logged_in = wandb.login(key=key)
                     if logged_in:
                         api = wandb.Api(timeout=20)
-                    outputs = (name, logged_in)
+                    outputs = (name, logged_in, None)
                 except:
-                    outputs = (name, False)
+                    outputs = (name, False, None)
             else:
                 assert api is not None
-                if name == 'summary':
+                if name == '/summary':
                     run_path = payload
                     run = api.run(path=run_path)
                     summary = {}
@@ -48,8 +53,8 @@ def wandb_loop(input_queue, output_queue):
                     for key, val in attrs['systemMetrics'].items():
                         summary[key[::-1].replace('.', '/', 1)[::-1]] = val
                     summary['state'] = colored_state(attrs['state'])
-                    outputs = (name, summary)
-                elif name == 'project':
+                    outputs = (name, summary, None)
+                elif name == '/project':
                     project, topk, filters, order = payload
                     runs = api.runs(path=project, filters=filters, order=order)
                     # need to use `len()` to trigger `_load_page`
@@ -66,8 +71,8 @@ def wandb_loop(input_queue, output_queue):
                             'group': attrs['group'],
                             'id': run.id,
                         })
-                    outputs = (name, runs_info)
-                elif name == 'image':
+                    outputs = (name, runs_info, None)
+                elif name == '/image':
                     runs, keys = payload
                     history_dict = {key: {} for key in keys}
                     step_dict = {}
@@ -103,40 +108,41 @@ def wandb_loop(input_queue, output_queue):
                     images = []
                     for key in keys:
                         plt.figure(0)
-                        with sns.color_palette("Set2", n_colors=10):
+                        with sns.color_palette('Set2', n_colors=10):
                             for run_name in runs:
                                 label = run_name.split('/')[-1]
-                                plt.plot(
+                                plots = plt.plot(
                                     step_dict[run_name],
                                     history_dict[key][run_name],
                                     label=label)
                                 if run_name in nan_dict[key]:
                                     nan_xs, nan_ys = nan_dict[key][run_name]
-                                    plt.scatter(nan_xs, nan_ys, label=f'{label}-nan')
+                                    # Make sure the NaN scatter plot is the same color as the origin line.
+                                    plt.scatter(nan_xs, nan_ys, color=plots[-1].get_color(), label=f'{label}-nan')
                         plt.title(key)
                         plt.legend()
                         # save figure to buffer
                         img_buf = io.BytesIO()
-                        plt.savefig(img_buf, format="png")
+                        plt.savefig(img_buf, format='png')
                         img_buf.seek(0)
                         img_base64 = base64.b64encode(img_buf.read())
                         images.append((key, img_base64))
                         plt.clf()
-                    outputs = (name, images)
+                    outputs = (name, images, None)
                 else:
-                    outputs = (name, None)
+                    outputs = (name, None, f'Unknown commad: {name}')
         except Exception as e:
             print(e)
-            outputs = (name, RuntimeError("unknown internal error"))
+            outputs = (name, None, f'Error when executing {name}: {str(e)}')
         print(f'finish command {name}')
         output_queue.put(outputs)
 
 
 class WandBProcess:
-    """
+    '''
     One process for each discord user so that the WANDB_API_KEY
     can be isolated.
-    """
+    '''
 
     def __init__(self, discord_username: str):
         self.discord_username = discord_username
@@ -156,9 +162,9 @@ class WandBProcess:
 
     def run(self, name, payload):
         self.input_queue.put((name, payload))
-        check_name, outputs = self.output_queue.get()
-        assert name == check_name, f"input and output name not match: {name} != {check_name}"
-        return outputs
+        check_name, outputs, error_message = self.output_queue.get()
+        assert name == check_name, f'input and output name not match: {name} != {check_name}'
+        return outputs, error_message
 
 
 class WandBProcessGroup:
@@ -169,15 +175,15 @@ class WandBProcessGroup:
         if discord_username in self.proc_dict:
             del self.proc_dict[discord_username]
         proc = WandBProcess(discord_username)
-        logged_in = proc.run('login', wandb_api_key)
+        logged_in = proc.run('/login', wandb_api_key)
         if logged_in:
             self.proc_dict[discord_username] = proc
         return logged_in
 
     def summary(self, discord_username: str, run_path: str):
         if discord_username not in self.proc_dict:
-            return None
-        return self.proc_dict[discord_username].run('summary', run_path)
+            return None, UNLOGGED_IN_ERROR_MESSAGE
+        return self.proc_dict[discord_username].run('/summary', run_path)
 
     def project(
         self,
@@ -185,11 +191,11 @@ class WandBProcessGroup:
         project: str,
         topk: str,
         filters: Dict[str, Any],
-        order: str = "-created_at",
+        order: str = '-created_at',
     ):
         if discord_username not in self.proc_dict:
-            return None
-        return self.proc_dict[discord_username].run('project', (project, topk, filters, order))
+            return None, UNLOGGED_IN_ERROR_MESSAGE
+        return self.proc_dict[discord_username].run('/project', (project, topk, filters, order))
 
     def image(
         self,
@@ -198,5 +204,5 @@ class WandBProcessGroup:
         keys: List[str],
     ):
         if discord_username not in self.proc_dict:
-            return None
-        return self.proc_dict[discord_username].run('image', (runs, keys))
+            return None, UNLOGGED_IN_ERROR_MESSAGE
+        return self.proc_dict[discord_username].run('/image', (runs, keys))

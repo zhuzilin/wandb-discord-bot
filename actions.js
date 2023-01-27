@@ -20,10 +20,8 @@ async function imageCommand(discord_username, project, runs, keys) {
     runs,
     keys,
   });
-  if (!resp.images) {
-    return failedResponse(
-      'You haven\'t logged in yet. Please use /login `WANDB_API_KEY` command to login first',
-    );
+  if (resp.error_message) {
+    return failedResponse(resp.error_message);
   }
 
   const messages = [];
@@ -48,6 +46,10 @@ async function loginCommand(discord_username, wandb_api_key) {
     discord_username,
     wandb_api_key,
   });
+  if (resp.error_message) {
+    return failedResponse(resp.error_message);
+  }
+
   if (resp.logged_in) {
     return responses(['Logged in.']);
   } else {
@@ -82,9 +84,8 @@ async function projectCommand(discord_username, project, topk, filters, order) {
     order,
   });
 
-  if (!resp.runs_info) {
-    return failedResponse(
-      'You haven\'t logged in yet. Please use /login `WANDB_API_KEY` command to login first');
+  if (resp.error_message) {
+    return failedResponse(resp.error_message);
   }
 
   const messages = [];
@@ -125,9 +126,8 @@ async function summaryCommand(discord_username, run, filters) {
     discord_username,
     run_path: run,
   });
-  if (!resp.summary) {
-    return failedResponse(
-      'You haven\'t logged in yet. Please use /login `WANDB_API_KEY` command to login first');
+  if (resp.error_message) {
+    return failedResponse(resp.error_message);
   }
 
   const entries = Object.entries(resp.summary).map((entry) => {

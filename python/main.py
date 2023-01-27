@@ -18,11 +18,11 @@ class LoginRequest(BaseModel):
     wandb_api_key: str
 
 
-@app.post("/login/")
+@app.post('/login/')
 async def login(req: LoginRequest):
     print(req)
-    logged_in = process_group.login(req.discord_username, req.wandb_api_key)
-    return {"logged_in": logged_in}
+    logged_in, error_message = process_group.login(req.discord_username, req.wandb_api_key)
+    return {'logged_in': logged_in, 'error_message': error_message}
 
 
 class SummaryRequst(BaseModel):
@@ -30,11 +30,11 @@ class SummaryRequst(BaseModel):
     run_path: str
 
 
-@app.post("/summary/")
+@app.post('/summary/')
 async def summary(req: SummaryRequst):
     print(req)
-    summary = process_group.summary(req.discord_username, req.run_path)
-    return {"summary": summary}
+    summary, error_message = process_group.summary(req.discord_username, req.run_path)
+    return {'summary': summary, 'error_message': error_message}
 
 
 class ProjectRequest(BaseModel):
@@ -45,17 +45,17 @@ class ProjectRequest(BaseModel):
     order: Optional[str]
 
 
-@app.post("/project/")
+@app.post('/project/')
 async def project(req: ProjectRequest):
     print(req)
     filters = json.loads(req.filters) if req.filters is not None else None
-    runs_info = process_group.project(
+    runs_info, error_message = process_group.project(
         req.discord_username,
         req.project,
         req.topk,
         filters,
-        req.order or "-created_at")
-    return {'runs_info': runs_info}
+        req.order or '-created_at')
+    return {'runs_info': runs_info, 'error_message': error_message}
 
 
 class ImageRequest(BaseModel):
@@ -64,18 +64,18 @@ class ImageRequest(BaseModel):
     keys: List[str]
 
 
-@app.post("/image/")
+@app.post('/image/')
 async def image(req: ImageRequest):
     print(req)
-    images = process_group.image(
+    images, error_message = process_group.image(
         req.discord_username,
         req.runs,
         req.keys)
-    return {'images': images}
+    return {'images': images, 'error_message': error_message}
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     uvicorn.run(
-      "main:app",
-      host="127.0.0.1",
+      'main:app',
+      host='127.0.0.1',
       port=8427)
