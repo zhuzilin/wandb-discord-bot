@@ -1,7 +1,11 @@
 'use strict';
 
 function parse(raw_command) {
-  const raw_commands = raw_command.split('\n').map(x => x.trim()).filter(x => x);
+  const raw_commands = raw_command
+    .split('\n')
+    .map(x => x.trim())
+    .filter(x => x)
+    .filter(x => x[0] !== '#');
   const commands = [];
   for (const i in raw_commands) {
     const raw_single_command = raw_commands[i];

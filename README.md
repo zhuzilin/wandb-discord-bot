@@ -195,12 +195,13 @@ Subscribe a list of commands in the current channel, so that they will be run by
 
   - `base64_command`: `str` _(required)_
 
-    The base64 encoded command list. The text contain origin command should be consists of one line command each line (empty line will be ignored).
+    The base64 encoded command list. The text contain origin command should be consists of one line command each line (empty line will be ignored). And you could use `#` started line as comment.
 
     You could encode the commands like (if you are using bash):
 
     ```bash
     cat <<EOF > commands
+    # commands for project zhuzilin/gpt
     /project project:zhuzilin/gpt topk:1
     /summary run:zhuzilin/gpt/a1b2c3d4 filters:train,validation/loss,_default/state
     /image project:zhuzilin/gpt runs:a1b2c3d4,e5f6g7h keys:train/loss
