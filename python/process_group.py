@@ -43,6 +43,8 @@ def wandb_loop(input_queue, output_queue):
                     outputs = (name, False, None)
             else:
                 assert api is not None
+                # Ignore local cache.
+                api.flush()
                 if name == '/summary':
                     run_path = payload
                     run = api.run(path=run_path)
