@@ -1,0 +1,6 @@
+wandb
+numpy
+matplotlib
+seaborn
+uvicorn
+fastapi

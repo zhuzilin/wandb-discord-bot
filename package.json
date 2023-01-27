@@ -1,0 +1,19 @@
+{
+  "name": "wandb-discord-bot",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node deploy-commands.js; node .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "zhuzilin",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.7.1",
+    "node-fetch": "^3.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.32.0"
+  }
+}
