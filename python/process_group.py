@@ -1,5 +1,6 @@
 import base64
 import io
+import numbers
 from multiprocessing import Process, Queue
 from typing import Dict, Any, List
 
@@ -70,30 +71,48 @@ def wandb_loop(input_queue, output_queue):
                     runs, keys = payload
                     history_dict = {key: {} for key in keys}
                     step_dict = {}
+                    nan_dict = {key: {} for key in keys}
                     for run_name in runs:
                         print(f'start fetching {run_name}')
                         run = api.run(path=run_name)
                         history = run.scan_history(keys=keys)
                         rows = [row for row in history]
+                        start_step = history.max_step - len(rows)
+                        end_step = history.max_step
                         print(
-                            f'  step {history.max_step - len(rows)} - {history.max_step}\n' +
+                            f'  step {start_step} - {end_step}\n' +
                             f'  num_rows: {len(rows)}\n' +
                             f'  row[-1]: {rows[-1]}'
                         )
                         for key in keys:
-                            values = np.array([row[key] for row in rows])
+                            nan_xs, nan_ys = [], []
+                            values = [row[key] for row in rows]
+                            # TODO: This is slow...
+                            for i, value in enumerate(values):
+                                if not isinstance(value, numbers.Number):
+                                    values[i] = values[i - 1] if i != 0 else 0
+                                    nan_xs.append(i + start_step)
+                                    nan_ys.append(values[i])
+                            if len(nan_ys) > 0:
+                                print(f'  [{key}] NaN on step {nan_xs}')
+                                nan_dict[key][run_name] = (np.array(nan_xs), np.array(nan_ys))
+                            values = np.array(values)
                             history_dict[key][run_name] = values
-                        step_dict[run_name] = np.array(range(history.max_step - len(rows), history.max_step))
+                        step_dict[run_name] = np.array(range(start_step, end_step))
 
                     images = []
                     for key in keys:
                         plt.figure(0)
                         with sns.color_palette("Set2", n_colors=10):
                             for run_name in runs:
+                                label = run_name.split('/')[-1]
                                 plt.plot(
                                     step_dict[run_name],
                                     history_dict[key][run_name],
-                                    label=run_name.split('/')[-1])
+                                    label=label)
+                                if run_name in nan_dict[key]:
+                                    nan_xs, nan_ys = nan_dict[key][run_name]
+                                    plt.scatter(nan_xs, nan_ys, label=f'{label}-nan')
                         plt.title(key)
                         plt.legend()
                         # save figure to buffer
