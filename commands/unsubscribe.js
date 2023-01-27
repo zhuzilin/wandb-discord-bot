@@ -12,7 +12,7 @@ module.exports = {
     if (res.success) {
       const { command, interval } = res.sub;
       const embed = new EmbedBuilder()
-        .setTitle(`Subscribing ${interaction.channel.name} 🟢`)
+        .setTitle(`Unsubscribing ${interaction.channel.name} 🟢`)
         .setThumbnail('https://avatars.githubusercontent.com/u/26401354?s=200&v=4')
         .setDescription(`${interaction.channel} unsubscribed.`)
         .addFields({ name: 'old command', value: command })
