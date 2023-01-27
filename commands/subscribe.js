@@ -9,9 +9,7 @@ const { runCommands } = require('../actions');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('subscribe')
-    .setDescription('Subscribe a list of commands in the current channel, so that they will be run by a given time interval.\n' +
-    '\n' +
-    '**NOTE**: We can only subscribe to one command list in a channel -- this is by design, as the messages will be a mess otherwise. If you hope to change the subscription, please run `/unsubscribe` in the channel.')
+    .setDescription('Subscribe a list of commands in the current channel.')
     .addIntegerOption(option =>
       option
         .setName('interval')
@@ -20,7 +18,7 @@ module.exports = {
     .addStringOption(option =>
       option
         .setName('base64_command')
-        .setDescription('The base64 encoded command list. The text contain origin command should be consists of one line command each line (empty line will be ignored).')
+        .setDescription('The base64 encoded command list.')
         .setRequired(true)),
   async execute(interaction) {
     await interaction.deferReply();

@@ -16,7 +16,7 @@ module.exports = {
     .addStringOption(option =>
       option
         .setName('filters')
-        .setDescription('Filters for the stats to show, in which each filter connected by `,` represents the stats you hope to show. In wandb, the stats may be of form `stats_type/stats_name`, you can use only the `states_type` as filter or the full `states_type/states_name`.')),
+        .setDescription('Filters for the stats to show.')),
   async execute(interaction) {
     const run = interaction.options.getString('run');
     const filters = interaction.options.getString('filters');

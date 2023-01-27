@@ -16,15 +16,15 @@ module.exports = {
     .addIntegerOption(option =>
       option
         .setName('topk')
-        .setDescription('The number of runs to check, when setting at non-positive integer, all runs will be returned.'))
+        .setDescription('The number of runs to check.'))
     .addStringOption(option =>
       option
         .setName('filters')
-        .setDescription('The filter of the runs, should be a `JSON.stringify`/`json.dumps` version of the `filters` argument for `wandb.public.Api.runs`.'))
+        .setDescription('The filter of the runs.'))
     .addStringOption(option =>
       option
         .setName('order')
-        .setDescription('The way to order the runs. It is the same as  the `order` argument for `wandb.public.Api.runs`. Default is a descending order on the creation time of the runs.')),
+        .setDescription('The way to order the runs.')),
   async execute(interaction) {
     const project = interaction.options.getString('project');
     const topk = interaction.options.getInteger('topk');

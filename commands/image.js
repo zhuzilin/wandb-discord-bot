@@ -21,9 +21,7 @@ module.exports = {
     .addStringOption(option =>
       option
         .setName('keys')
-        .setDescription('The stats key to plot. They should be connected with `,`.\n' +
-          '\n' +
-          '**NOTE**: Currently we only support keys that are submitted to wandb every steps. So it may not work for plotting stats like `validation/loss`.')
+        .setDescription('The stats key to plot. They should be connected with `,`.')
         .setRequired(true)),
   async execute(interaction) {
     const project = interaction.options.getString('project');
