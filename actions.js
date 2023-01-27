@@ -15,7 +15,7 @@ async function imageCommand(discord_username, project, runs, keys) {
   }
   keys = keys.split(',');
 
-  const resp = await post('http://localhost:8000/image', {
+  const resp = await post('http://localhost:8427/image', {
     discord_username,
     runs,
     keys,
@@ -44,7 +44,7 @@ async function imageCommand(discord_username, project, runs, keys) {
 }
 
 async function loginCommand(discord_username, wandb_api_key) {
-  const resp = await post('http://localhost:8000/login', {
+  const resp = await post('http://localhost:8427/login', {
     discord_username,
     wandb_api_key,
   });
@@ -74,7 +74,7 @@ async function projectCommand(discord_username, project, topk, filters, order) {
   }
   order = order ?? '-created_at';
 
-  const resp = await post('http://localhost:8000/project', {
+  const resp = await post('http://localhost:8427/project', {
     discord_username,
     project,
     topk,
@@ -121,7 +121,7 @@ async function summaryCommand(discord_username, run, filters) {
     () => true :
     (group_key, sub_key) => (filters.includes(group_key) || filters.includes(`${group_key}/${sub_key}`));
 
-  const resp = await post('http://localhost:8000/summary', {
+  const resp = await post('http://localhost:8427/summary', {
     discord_username,
     run_path: run,
   });
