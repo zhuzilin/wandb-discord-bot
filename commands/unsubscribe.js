@@ -1,14 +1,14 @@
 'use strict';
 
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { subscriptions } = require('../subscriptions');
+const { state } = require('../state');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('unsubscribe')
     .setDescription('Unsubscribe the commands in the current channel.'),
   async execute(interaction) {
-    const res = subscriptions.remove(interaction.channelId);
+    const res = state.subscriptions.remove(interaction.channelId);
     if (res.success) {
       const { command, interval } = res.sub;
       const embed = new EmbedBuilder()

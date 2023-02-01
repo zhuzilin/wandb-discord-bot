@@ -145,11 +145,11 @@ async function summaryCommand(discord_username, run, filters) {
     .setTitle(`${run}`)
     .setThumbnail('https://avatars.githubusercontent.com/u/26401354?s=200&v=4')
     .setURL(`https://wandb.ai/${run_info[0]}/${run_info[1]}`);
-  for (const group_key in grouped_entries) {
+  for (const group_key of Object.keys(grouped_entries).sort()) {
     grouped_entries[group_key]
       .sort((a, b) => (a.sub_key <= b.sub_key));
     let text = '';
-    for (const value of grouped_entries[group_key]) {
+    for (const value of grouped_entries[group_key].sort((a, b) => a.sub_key <= b.sub_key)) {
       if (filter(group_key, value.sub_key)) {
         text += `- **${value.sub_key}**: ${value.value}\n`;
       }

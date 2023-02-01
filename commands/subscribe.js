@@ -2,7 +2,7 @@
 
 const wait = require('node:timers/promises').setTimeout;
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { subscriptions } = require('../subscriptions');
+const { state } = require('../state');
 const { parse } = require('../parse');
 const { runCommands } = require('../actions');
 
@@ -41,7 +41,7 @@ module.exports = {
       }
     }
 
-    const res = subscriptions.add(channelId, raw_command, interval, timestamp);
+    const res = state.subscriptions.add(channelId, raw_command, interval, timestamp);
     const sub = res.sub;
     const embed = new EmbedBuilder()
       .setThumbnail('https://avatars.githubusercontent.com/u/26401354?s=200&v=4');
@@ -66,15 +66,15 @@ module.exports = {
       embed.addFields({ name: 'interval', value: `${sub.interval} min` });
       await interaction.editReply({ embeds: [embed] });
     }
-    while (subscriptions.includes(channelId, timestamp)) {
+    while (state.subscriptions.includes(channelId, timestamp)) {
       const { success, messages } = await runCommands(interaction.user.username, commands);
       // Slash command expires in 15 minutes, so need to use `channel.send`.
       for (const message of messages) {
         await interaction.channel.send(message);
       }
       if (!success) {
-        if (subscriptions.includes(channelId, timestamp)) {
-          subscriptions.remove(channelId);
+        if (state.subscriptions.includes(channelId, timestamp)) {
+          state.subscriptions.remove(channelId);
         }
         break;
       }
