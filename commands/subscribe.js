@@ -62,7 +62,7 @@ module.exports = {
         .setDescription(
           `${interaction.channel} subscribed`,
         );
-      embed.addFields({ name: 'command', value: sub.command });
+      embed.addFields({ name: 'command', value: sub.command.split('\n').join('\n\n') });
       embed.addFields({ name: 'interval', value: `${sub.interval} min` });
       await interaction.editReply({ embeds: [embed] });
     }
