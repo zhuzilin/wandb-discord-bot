@@ -28,7 +28,7 @@ function parseSingleCommand(raw_command) {
     };
   }
   const param_list = [];
-  for (const param of raw_pieces.slice(1).map(x => x.split(':'))) {
+  for (const param of raw_pieces.slice(1).map(x => x.replace('%20', ' ')).map(x => x.split(':'))) {
     if (param.length === 1) {
       return {
         command: null,
